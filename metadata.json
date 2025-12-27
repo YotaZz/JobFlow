@@ -1,0 +1,5 @@
+{
+  "name": "JobFlow - 招聘投递追踪",
+  "description": "一个可视化的求职进度追踪应用。支持自定义招聘流程节点，通过进度条直观展示投递状态，管理公司、岗位、薪资及备注信息。",
+  "requestFramePermissions": []
+}
