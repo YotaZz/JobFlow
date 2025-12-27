@@ -136,6 +136,14 @@ const App: React.FC = () => {
     await supabase.from('jobs').update({ current_step_index: newIndex, current_step_status: newStatus, step_dates: newDates, updated_at: new Date().toISOString() }).eq('id', id);
   };
 
+// 补充这个缺失的函数
+  const handleSaveSettings = (newSteps: string[]) => {
+    setConfig(prev => ({ ...prev, defaultSteps: newSteps }));
+    // 不需要手动 setIsSettingsModalOpen(false)，因为 SettingsModal 内部的 handleSave 已经调用了 onClose，
+    // 但为了保险起见，或者如果您的逻辑有变，也可以加上：
+    // setIsSettingsModalOpen(false); 
+  };
+
   const handleLogout = async () => {
     await supabase.auth.signOut();
   };
