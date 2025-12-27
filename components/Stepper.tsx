@@ -94,16 +94,18 @@ export const Stepper: React.FC<StepperProps> = ({
           const isOC = stepNameUpper === 'OC';
           const hasDate = !!stepDates[index];
 
-          // Date Display Logic
-          // 1. Wait to Apply (index 0): Hide
-          // 2. Applied / OC: Show if entered (hasDate)
-          // 3. Others: Show if completed OR (current AND rejected)
+// Date Display Logic
+          // 1. Applied / OC: Show if entered (hasDate)
+          // 2. Others: Show if completed OR (current AND rejected)
           let showDate = false;
-          if (index > 0) {
-            if (isApplied || isOC) {
-              showDate = hasDate;
-            } else {
-              showDate = isCompleted || (isCurrent && currentStepStatus === 'rejected');
+          
+          if (isApplied || isOC) {
+            // 对于“已投递”和“OC”，只要有日期就显示
+            showDate = hasDate;
+          } else {
+            // 对于中间步骤（如面试），完成或挂掉时显示
+            if (index > 0) {
+               showDate = isCompleted || (isCurrent && currentStepStatus === 'rejected');
             }
           }
           
