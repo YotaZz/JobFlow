@@ -74,8 +74,8 @@
 ### 1. 克隆项目与安装依赖
 
 ```bash
-git clone [https://github.com/your-username/jobflow.git](https://github.com/your-username/jobflow.git)
-cd jobflow
+git clone [https://github.com/YotaZz/JobFlow.git](https://github.com/YotaZz/JobFlow.git)
+cd JobFlow
 npm install
 
 ```
