@@ -256,11 +256,36 @@ const App: React.FC = () => {
     localStorage.setItem(STORAGE_KEYS.CONFIG, JSON.stringify({ defaultSteps: newSteps }));
   };
 
+
   const handleLogout = async () => {
     if (window.confirm("确定要退出登录吗？")) {
-      await supabase.auth.signOut();
+      // 1. 【乐观更新】不等待网络请求，立即清理前端状态
+      // 这样用户点击确认后，界面会瞬间反应，体验极佳
+      setUser(null);
+      setJobs([]);
+      
+      // 2. 清理可能存在的本地缓存（如查看模式的邮箱）
+      localStorage.removeItem(STORAGE_KEYS.VIEW_MODE_EMAIL);
+
+      // 3. 立即重置并显示欢迎页
+      setWelcomeInitialMode('selection');
+      setShowWelcome(true);
+
+      // 4. 【后台执行】发送登出请求给 Supabase
+      // 即使这个请求因为网络原因失败，前端也已经完成了“退出”的视觉操作，
+      // 且 LocalStorage 中的 Token 通常会被 Supabase 客户端自动清理或失效。
+      try {
+        await supabase.auth.signOut();
+      } catch (error) {
+        console.error("后台登出请求异常:", error);
+        // 极端情况下手动清理 Supabase 的本地存储 Key（通常不需要，视情况而定）
+        // Object.keys(localStorage).forEach(key => {
+        //   if (key.startsWith('sb-')) localStorage.removeItem(key);
+        // });
+      }
     }
   };
+
 
   const handleSelectView = (email: string) => {
     localStorage.setItem(STORAGE_KEYS.VIEW_MODE_EMAIL, email); 
