@@ -48,10 +48,14 @@ const App: React.FC = () => {
     };
   }, []);
 
-  // 1. 获取数据逻辑（修复了 return 换行及补齐“已投递”时间）
+  // 1. 获取数据逻辑（含：初筛10天无回应自动结束逻辑）
   const fetchJobs = async () => {
     const { data, error } = await supabase.from('jobs').select('*').order('created_at', { ascending: false });
     if (data) {
+      const now = Date.now();
+      const tenDays = 10 * 24 * 60 * 60 * 1000;
+      const updates: string[] = [];
+
       const mappedJobs: JobApplication[] = data.map((item: any) => {
         const createdAt = new Date(item.created_at).getTime();
         const stepDates = item.step_dates || {};
@@ -61,6 +65,23 @@ const App: React.FC = () => {
             stepDates[0] = createdAt;
         }
 
+        let currentStatus = item.current_step_status;
+        const currentStepIndex = item.current_step_index;
+        const steps = item.steps || [];
+        const currentStepName = steps[currentStepIndex];
+
+        // 自动化逻辑：如果是“初筛”且处于“等待”状态超过10天 -> 自动转为“Rejected”(无回应)
+        const isScreening = currentStepName === '初筛' || currentStepIndex === 1;
+        if (isScreening && currentStatus === 'waiting') {
+           // 优先使用 stepDates 中的时间，如果没有（如测试手动改库），则回退使用 updated_at
+           const stepDate = stepDates[currentStepIndex] || new Date(item.updated_at).getTime();
+           
+           if (stepDate && (now - stepDate > tenDays)) {
+               currentStatus = 'rejected';
+               updates.push(item.id);
+           }
+        }
+
         return {
           id: item.id,
           company: item.company,
@@ -68,14 +89,25 @@ const App: React.FC = () => {
           jobType: item.job_type,
           salary: item.salary,
           notes: item.notes,
-          steps: item.steps || [],
-          currentStepIndex: item.current_step_index,
-          currentStepStatus: item.current_step_status,
+          steps: steps,
+          currentStepIndex: currentStepIndex,
+          currentStepStatus: currentStatus, // 使用可能更新后的状态
           stepDates: stepDates, 
           createdAt: createdAt,
           updatedAt: new Date(item.updated_at).getTime(),
         };
       });
+      
+      // 批量执行自动更新（如果在初筛等待超过10天）
+      if (updates.length > 0) {
+        await Promise.all(updates.map(id => 
+           supabase.from('jobs').update({
+             current_step_status: 'rejected',
+             updated_at: new Date().toISOString()
+           }).eq('id', id)
+        ));
+      }
+
       setJobs(mappedJobs);
     }
     setIsLoading(false);
@@ -125,6 +157,7 @@ const App: React.FC = () => {
 
     const stepName = job.steps[targetIndex];
     const isOC = stepName && stepName.toUpperCase() === 'OC';
+    // 初筛逻辑：名称为'初筛' 或 索引为1
     const isScreening = stepName === '初筛' || targetIndex === 1;
 
     let newIndex = job.currentStepIndex;
@@ -132,13 +165,19 @@ const App: React.FC = () => {
     let newDates = { ...job.stepDates };
 
     if (targetIndex === job.currentStepIndex) {
+        // 点击当前节点：切换状态
         if (isOC) return; 
+        // 初筛没有"in-progress"(进入)状态，直接在 waiting 和 rejected 之间切换
         let statusFlow: StepStatus[] = isScreening ? ['waiting', 'rejected'] : ['in-progress', 'waiting', 'rejected'];
         const currentStatusIndex = statusFlow.indexOf(job.currentStepStatus);
-        newStatus = statusFlow[(currentStatusIndex + 1) % statusFlow.length] || statusFlow[0];
+        // 如果当前状态不在流程中（比如旧数据的in-progress），重置为waiting
+        const nextIndex = currentStatusIndex === -1 ? 0 : (currentStatusIndex + 1) % statusFlow.length;
+        newStatus = statusFlow[nextIndex];
     } else {
+        // 点击新节点：跳转
         newIndex = targetIndex;
         newDates[targetIndex] = Date.now();
+        // 初筛默认直接进入 waiting 状态
         newStatus = isScreening ? 'waiting' : 'in-progress';
     }
 

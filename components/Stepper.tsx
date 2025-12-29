@@ -92,24 +92,30 @@ export const Stepper: React.FC<StepperProps> = ({
           const stepNameUpper = step.toUpperCase();
           const isApplied = stepNameUpper === '已投递';
           const isOC = stepNameUpper === 'OC';
+          const isScreening = step === '初筛';
           const hasDate = !!stepDates[index];
 
-// Date Display Logic
-          // 1. Applied / OC: Show if entered (hasDate)
-          // 2. Others: Show if completed OR (current AND rejected)
+          // Date Display Logic
+          // 1. Applied: Always show if exists
+          // 2. OC: Show only if we have reached this step or passed it (though it's usually last)
+          // 3. Others: Show if completed OR (current AND rejected)
           let showDate = false;
           
-          if (isApplied || isOC) {
-            // 对于“已投递”和“OC”，只要有日期就显示
+          if (isApplied) {
             showDate = hasDate;
+          } else if (isOC) {
+            // Fix: Only show OC date if the current progress is at or past OC
+            showDate = hasDate && (index <= currentStepIndex);
           } else {
-            // 对于中间步骤（如面试），完成或挂掉时显示
             if (index > 0) {
                showDate = isCompleted || (isCurrent && currentStepStatus === 'rejected');
             }
           }
           
           const dateStr = showDate ? formatDate(stepDates[index]) : '';
+          
+          // Tooltip logic
+          const statusText = isScreening ? "等待/无回应" : "进入/等待/结束";
 
           return (
             <div key={`${step}-${index}`} className="flex items-center flex-1 last:flex-none relative">
@@ -132,7 +138,7 @@ export const Stepper: React.FC<StepperProps> = ({
                     ${interactive ? 'cursor-pointer hover:scale-110' : 'cursor-default'}
                     ${getStepColorClasses(isCompleted, isCurrent, currentStepStatus, isOC)}
                   `}
-                  title={isCurrent && interactive ? "点击切换状态: 进入/等待/结束" : ""}
+                  title={isCurrent && interactive ? `点击切换状态: ${statusText}` : ""}
                 >
                   {getStepIcon(isCompleted, isCurrent, currentStepStatus, isOC)}
                 </button>

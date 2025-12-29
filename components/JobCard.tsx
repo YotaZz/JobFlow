@@ -63,7 +63,7 @@ export const JobCard: React.FC<JobCardProps> = ({ job, onUpdateStep, onEdit, onD
               )}
               <div className="flex items-center gap-1">
                 <CalendarDays size={10} />
-                <span>{formattedDate}</span>
+                <span>更新于 {formattedDate}</span>
               </div>
             </div>
           </div>
