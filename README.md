@@ -41,7 +41,7 @@
 
 | 👥 **多模式访问** | 📱 **移动端适配** |
 | --- | --- |
-| <img src="https://github.com/user-attachments/assets/ba1fa8b9-a4a0-4048-89a8-11d9db3f2648" width="100%" alt="Welcome Mode" /> | <img src="https://github.com/user-attachments/assets/099947b6-49b8-4dbd-8d7a-f6a7811ff16a" width="100%" alt="Mobile View" /> |
+| <img src="https://github.com/user-attachments/assets/87c22ec2-73b1-423f-b51e-b24350ccb834" width="100%" alt="Welcome Mode" /> | <img src="https://github.com/user-attachments/assets/099947b6-49b8-4dbd-8d7a-f6a7811ff16a" width="100%" alt="Mobile View" /> |
 | **支持管理模式与仅查看分享模式** | **随时随地更新面试进度** |
 
 ---
