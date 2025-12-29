@@ -95,8 +95,12 @@ export const JobCard: React.FC<JobCardProps> = ({ job, onUpdateStep, onEdit, onD
                 <CalendarDays size={10} />
                 <span>{formattedDate}</span>
               </div>
+               {/* 修复：找回 title 属性，并增加鼠标手势 */}
                {efficiency && (
-                  <div className="flex items-center gap-1 text-[10px] text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">
+                  <div 
+                    className="flex items-center gap-1 text-[10px] text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full cursor-help hover:bg-slate-200 transition-colors"
+                    title={`总耗时 ${efficiency.total} 天 / ${efficiency.rounds} 轮面试`}
+                  >
                       <Timer size={10} />
                       <span className="font-medium">{efficiency.avg} 天/轮</span>
                   </div>
