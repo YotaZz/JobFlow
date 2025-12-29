@@ -1,5 +1,6 @@
-export type StepStatus = 'in-progress' | 'waiting' | 'rejected';
+// types.ts
 
+export type StepStatus = 'in-progress' | 'waiting' | 'rejected';
 export type JobType = 'internship' | 'campus' | 'social';
 
 export interface UserProfile {
@@ -12,19 +13,18 @@ export interface UserProfile {
   rejected_applications?: number;
 }
 
-
-
 export interface JobApplication {
   id: string;
   company: string;
   position: string;
   jobType: JobType;
+  tags: string[]; // 变更点：由 season?: string 改为 tags string array
   salary?: string;
   notes?: string;
   steps: string[];
   currentStepIndex: number;
   currentStepStatus: StepStatus;
-  stepDates: Record<number, number>; // timestamp
+  stepDates: Record<number, number>; 
   createdAt: number;
   updatedAt: number;
 }
