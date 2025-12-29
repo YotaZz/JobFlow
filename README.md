@@ -22,16 +22,15 @@
 
 ## 📸 界面预览
 
-| 📊 \\\*\\\*直观看板 \\\& 统计\\\*\\\* | 📝 \\\*\\\*全流程进度追踪\\\*\\\* |
+| 📊 **直观看板 & 统计** | 📝 **全流程进度追踪** |
 | :---: | :---: |
 | <img src="https://github.com/user-attachments/assets/b0c84625-549b-499a-adc4-1735184da8e4" width="100%" alt="Dashboard" /> | <img src="https://github.com/user-attachments/assets/151dde4f-8bbb-40b6-9744-e6874dcd1e37" width="100%" alt="Edit Modal" /> |
-| \\\*\\\*一目了然的投递状态概览\\\*\\\* | \\\*\\\*拖拽式节点管理与时间轴记录\\\*\\\* |
+| **一目了然的投递状态概览** | **拖拽式节点管理与时间轴记录** |
 
-| 👥 \\\*\\\*多模式访问\\\*\\\* | 📱 \\\*\\\*移动端适配\\\*\\\* |
+| 👥 **多模式访问** | 📱 **移动端适配** |
 | :---: | :---: |
 | <img src="https://github.com/user-attachments/assets/87c22ec2-73b1-423f-b51e-b24350ccb834" width="100%" alt="Welcome Mode" /> | <img src="https://github.com/user-attachments/assets/099947b6-49b8-4dbd-8d7a-f6a7811ff16a" width="100%" alt="Mobile View" /> |
-| \\\*\\\*支持管理模式与仅查看分享模式\\\*\\\* | \\\*\\\*随时随地更新面试进度\\\*\\\* |
-
+| **支持管理模式与仅查看分享模式** | **随时随地更新面试进度** |
 ---
 
 ## 🚀 在线使用 (推荐)
