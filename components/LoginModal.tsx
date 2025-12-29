@@ -34,7 +34,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
         
         // 注册成功处理（Supabase 默认可能需要邮箱验证，视配置而定）
         if (data.user && !data.session) {
-           setMessage("注册成功！请前往邮箱查收验证邮件。（若没有收到邮件则该邮箱可能已注册过）");
+           setMessage("注册成功！请前往邮箱查收验证邮件。");
         } else {
            // 如果关闭了邮箱验证，直接登录成功
            onClose();

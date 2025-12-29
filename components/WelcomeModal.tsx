@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Eye, ShieldCheck, ArrowRight, Loader2, UserPlus, LogIn, Lock, KeyRound } from 'lucide-react'; // 引入 KeyRound 图标
+import { Eye, ShieldCheck, ArrowRight, Loader2, UserPlus, LogIn, Lock, KeyRound } from 'lucide-react';
 import { supabase } from '../supabaseClient';
 
 interface WelcomeModalProps {
@@ -17,7 +17,6 @@ export const WelcomeModal: React.FC<WelcomeModalProps> = ({
   onSelectView,
   initialMode = 'selection'
 }) => {
-  // 修改：增加 'forgot-password' 模式
   const [mode, setMode] = useState<'selection' | 'view-input' | 'auth' | 'forgot-password'>(initialMode);
   
   // Auth Form State
@@ -48,7 +47,6 @@ export const WelcomeModal: React.FC<WelcomeModalProps> = ({
 
   if (!isOpen) return null;
 
-  // ... (handleViewSubmit 保持不变)
   const handleViewSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (viewEmail.trim()) {
@@ -56,7 +54,6 @@ export const WelcomeModal: React.FC<WelcomeModalProps> = ({
     }
   };
 
-  // ... (handleAuthSubmit 保持不变)
   const handleAuthSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -67,6 +64,14 @@ export const WelcomeModal: React.FC<WelcomeModalProps> = ({
       if (isSignUp) {
         const { data, error } = await supabase.auth.signUp({ email, password });
         if (error) throw error;
+
+        // 【修改点 1】检测重复注册
+        // 如果 Supabase 返回了 user 对象，但 identities 数组为空，说明该邮箱已存在
+        if (data.user && data.user.identities && data.user.identities.length === 0) {
+            setError('该邮箱已被注册，请直接登录');
+            return;
+        }
+
         if (data.user && !data.session) {
            setMessage("注册成功！请前往邮箱查收验证邮件。");
         } else {
@@ -78,13 +83,18 @@ export const WelcomeModal: React.FC<WelcomeModalProps> = ({
         if (onLoginSuccess) onLoginSuccess();
       }
     } catch (err: any) {
-      setError(err.message || '操作失败，请重试');
+      // 【修改点 2】优化错误提示
+      // 如果 Supabase 设置已允许暴露错误，捕获 "already registered"
+      if (err.message && (err.message.includes('already registered') || err.message.includes('unique constraint'))) {
+          setError('该邮箱已被注册，请直接登录');
+      } else {
+          setError(err.message || '操作失败，请重试');
+      }
     } finally {
       setLoading(false);
     }
   };
 
-  // 新增：处理重置密码请求
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -92,7 +102,6 @@ export const WelcomeModal: React.FC<WelcomeModalProps> = ({
     setMessage('');
 
     try {
-        // 重定向 URL 必须在 Supabase 后台配置过 (Redirect URLs)
         const { error } = await supabase.auth.resetPasswordForEmail(email, {
             redirectTo: window.location.origin, 
         });
@@ -111,7 +120,7 @@ export const WelcomeModal: React.FC<WelcomeModalProps> = ({
         return { bg: 'bg-gradient-to-br from-emerald-500 to-teal-600', title: '查看他人进度', subtitle: '请输入目标用户的邮箱地址' };
       case 'auth':
         return { bg: 'bg-gradient-to-br from-blue-600 to-indigo-700', title: isSignUp ? '注册新账号' : '管理员登录', subtitle: isSignUp ? '创建账号以开始追踪您的求职进度' : '登录以管理您的投递记录' };
-      case 'forgot-password': // 新增
+      case 'forgot-password':
         return { bg: 'bg-gradient-to-br from-slate-600 to-slate-700', title: '重置密码', subtitle: '请输入注册邮箱以接收验证链接' };
       default: 
         return { bg: 'bg-gradient-to-br from-blue-600 to-indigo-700', title: '欢迎使用 JobFlow', subtitle: '请选择您的使用模式' };
@@ -130,7 +139,6 @@ export const WelcomeModal: React.FC<WelcomeModalProps> = ({
         </div>
 
         <div className="p-6 overflow-y-auto">
-          {/* ... Selection Mode 和 View Mode 代码保持不变 ... */}
           {mode === 'selection' && (
              <div className="space-y-4 animate-in slide-in-from-left duration-300">
                <button onClick={() => setMode('auth')} className="w-full group relative flex items-center gap-4 p-4 rounded-xl border border-slate-200 hover:border-blue-500 hover:bg-blue-50 transition-all text-left">
@@ -156,7 +164,6 @@ export const WelcomeModal: React.FC<WelcomeModalProps> = ({
              </form>
           )}
 
-          {/* Auth 模式 (登录/注册) */}
           {mode === 'auth' && (
             <div className="animate-in slide-in-from-right duration-300">
               {message ? (
@@ -201,7 +208,6 @@ export const WelcomeModal: React.FC<WelcomeModalProps> = ({
             </div>
           )}
 
-          {/* 新增：忘记密码模式 */}
           {mode === 'forgot-password' && (
              <div className="animate-in slide-in-from-right duration-300">
                 {message ? (
