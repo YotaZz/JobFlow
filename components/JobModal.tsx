@@ -221,7 +221,7 @@ export const JobModal: React.FC<JobModalProps> = ({
             <div className="pt-4 border-t border-slate-100">
               <div className="flex justify-between items-center mb-4">
                 <label className="text-sm font-semibold text-slate-700 flex items-center gap-2">
-                  招聘流程节点配置
+                  求职流程节点配置
                   <span className="text-xs font-normal text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">此记录专属</span>
                 </label>
                 <button 

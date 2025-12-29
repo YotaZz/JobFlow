@@ -74,7 +74,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, d
         <div className="flex-1 overflow-y-auto pr-2">
             {/* 流程设置部分 */}
             <div className="mb-8">
-                <label className="block text-sm font-medium text-slate-700 mb-2">默认招聘流程配置</label>
+                <label className="block text-sm font-medium text-slate-700 mb-2">默认求职流程配置</label>
                 <p className="text-xs text-slate-500 mb-3">每行代表一个节点，支持自定义顺序</p>
                 <textarea 
                     value={steps}
