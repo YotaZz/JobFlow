@@ -2,9 +2,7 @@
 
 <div align="center">
 
-</div>
 
-<div align="center">
 
 
 
@@ -20,6 +18,7 @@
 
 <p>
 <a href="#-功能特性">功能特性</a> •
+<a href="#-界面预览">界面预览</a> •
 <a href="#-在线使用">在线使用</a> •
 <a href="#-开发者指南">开发者指南</a>
 </p>
@@ -32,6 +31,20 @@
 **JobFlow** 是一个现代化的求职进度追踪应用。它摒弃了繁琐的 Excel 表格，通过直观的**进度条 (Stepper)** 和**卡片式布局**，帮助求职者清晰地管理每一个面试流程。
 
 无论是实习、校招还是社招，你都可以自定义招聘节点，记录薪资待遇、面试备注，并实时追踪从“已投递”到“OC”的全过程。
+
+## 📸 界面预览
+
+| 📊 **直观看板 & 统计** | 📝 **全流程进度追踪** |
+| --- | --- |
+| <img src="https://github.com/user-attachments/assets/b0c84625-549b-499a-adc4-1735184da8e4" width="100%" alt="Dashboard" /> | <img src="https://github.com/user-attachments/assets/151dde4f-8bbb-40b6-9744-e6874dcd1e37" width="100%" alt="Edit Modal" /> |
+| **一目了然的投递状态概览** | **拖拽式节点管理与时间轴记录** |
+
+| 👥 **多模式访问** | 📱 **移动端适配** |
+| --- | --- |
+| <img src="https://github.com/user-attachments/assets/ba1fa8b9-a4a0-4048-89a8-11d9db3f2648" width="100%" alt="Welcome Mode" /> | <img src="https://github.com/user-attachments/assets/099947b6-49b8-4dbd-8d7a-f6a7811ff16a" width="100%" alt="Mobile View" /> |
+| **支持管理模式与仅查看分享模式** | **随时随地更新面试进度** |
+
+---
 
 ## 🚀 在线使用 (推荐)
 

@@ -4,7 +4,6 @@ import { DEFAULT_STEPS, STORAGE_KEYS } from './constants';
 import { JobCard } from './components/JobCard';
 import { JobModal } from './components/JobModal';
 import { SettingsModal } from './components/SettingsModal';
-// import { LoginModal } from './components/LoginModal'; // 删除引用
 import { WelcomeModal } from './components/WelcomeModal';
 import { Plus, Settings, Search, LayoutList, Briefcase, Loader2, LogIn, LogOut, Lock, Unlock, Eye } from 'lucide-react';
 import { supabase } from './supabaseClient';
@@ -14,24 +13,27 @@ const App: React.FC = () => {
   const [jobs, setJobs] = useState<JobApplication[]>([]);
   const [config, setConfig] = useState<AppConfig>({ defaultSteps: DEFAULT_STEPS });
   
-  // Modals
+  // Modals State
   const [isJobModalOpen, setIsJobModalOpen] = useState(false);
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
-  // const [isLoginModalOpen, setIsLoginModalOpen] = useState(false); // 删除
   
+  // Welcome Modal State
   const [showWelcome, setShowWelcome] = useState(false);
-  const [welcomeInitialMode, setWelcomeInitialMode] = useState<'selection' | 'auth'>('selection'); // 新增：控制欢迎页初始模式
+  const [welcomeInitialMode, setWelcomeInitialMode] = useState<'selection' | 'auth'>('selection');
 
   const [editingJob, setEditingJob] = useState<JobApplication | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   
+  // User & Mode State
   const [user, setUser] = useState<User | null>(null);
   const [viewModeEmail, setViewModeEmail] = useState<string | null>(null);
 
+  // Computed Modes
   const isManageMode = !!user;
   const isViewMode = !!viewModeEmail && !user;
 
+  // 1. 初始化逻辑
   useEffect(() => {
     const init = async () => {
       const { data: { session } } = await supabase.auth.getSession();
@@ -39,9 +41,16 @@ const App: React.FC = () => {
       if (session?.user) {
         setUser(session.user);
         fetchJobs(session.user.id); 
-      } else if (!viewModeEmail) {
-        setWelcomeInitialMode('selection'); // 默认进入选择模式
-        setShowWelcome(true);
+      } else {
+        const savedViewEmail = localStorage.getItem(STORAGE_KEYS.VIEW_MODE_EMAIL);
+        if (savedViewEmail) {
+            setViewModeEmail(savedViewEmail);
+            fetchJobs(undefined, savedViewEmail);
+            setShowWelcome(false);
+        } else {
+            setWelcomeInitialMode('selection');
+            setShowWelcome(true);
+        }
         setIsLoading(false); 
       }
     };
@@ -51,14 +60,18 @@ const App: React.FC = () => {
     const { data: { subscription: authListener } } = supabase.auth.onAuthStateChange((_event, session) => {
       const currentUser = session?.user ?? null;
       setUser(currentUser);
+      
       if (currentUser) {
+        localStorage.removeItem(STORAGE_KEYS.VIEW_MODE_EMAIL);
+        setViewModeEmail(null);
         setShowWelcome(false); 
-        setViewModeEmail(null); 
         fetchJobs(currentUser.id);
-      } else if (!viewModeEmail) {
-        setJobs([]);
-        setWelcomeInitialMode('selection');
-        setShowWelcome(true);
+      } else {
+        if (!localStorage.getItem(STORAGE_KEYS.VIEW_MODE_EMAIL)) {
+            setJobs([]);
+            setWelcomeInitialMode('selection');
+            setShowWelcome(true);
+        }
       }
     });
 
@@ -70,11 +83,13 @@ const App: React.FC = () => {
     return () => {
       authListener.unsubscribe();
     };
-  }, [viewModeEmail]);
+  }, []);
 
-  // ... (fetchJobs, handleSaveJob, handleDeleteJob, handleUpdateStep, handleSaveSettings 保持不变)
-  const fetchJobs = async (userId?: string, targetEmail?: string) => {
-    setIsLoading(true);
+  // 2. 数据获取逻辑
+  // showLoading 参数：默认为 true。但在更新操作时传入 false，实现“静默刷新”，防止界面闪烁
+  const fetchJobs = async (userId?: string, targetEmail?: string, showLoading = true) => {
+    if (showLoading) setIsLoading(true);
+    
     let query = supabase.from('jobs').select('*').order('created_at', { ascending: false });
 
     if (userId) {
@@ -83,12 +98,12 @@ const App: React.FC = () => {
       query = query.eq('email', targetEmail);
     } else {
       setJobs([]);
-      setIsLoading(false);
+      if (showLoading) setIsLoading(false);
       return;
     }
 
     const { data } = await query;
-    // ... (内部逻辑保持不变)
+
     if (data) {
         const now = Date.now();
         const tenDays = 10 * 24 * 60 * 60 * 1000;
@@ -143,12 +158,12 @@ const App: React.FC = () => {
   
         setJobs(mappedJobs);
       }
-    setIsLoading(false);
+    if (showLoading) setIsLoading(false);
   };
 
+  // 3. 业务操作逻辑
   const handleSaveJob = async (jobData: any, id?: string) => {
     if (!user) return alert("请先登录");
-    
     const initialStepDates = id ? jobData.stepDates : { 0: Date.now() };
 
     const dbPayload = {
@@ -171,17 +186,20 @@ const App: React.FC = () => {
     } else {
       await supabase.from('jobs').insert([dbPayload]);
     }
-    fetchJobs(user.id);
+    // 使用静默刷新 (false)，防止列表重置导致闪烁
+    fetchJobs(user.id, undefined, false);
   };
 
   const handleDeleteJob = async (id: string) => {
     if (!user) return;
     if (window.confirm('确定要删除这条投递记录吗？')) {
       await supabase.from('jobs').delete().eq('id', id);
-      fetchJobs(user.id);
+      // 使用静默刷新
+      fetchJobs(user.id, undefined, false);
     }
   };
 
+  // 【核心修改】增加乐观更新 (Optimistic UI) 逻辑
   const handleUpdateStep = async (id: string, targetIndex: number) => {
     if (!user) return; 
     const job = jobs.find(j => j.id === id);
@@ -195,6 +213,7 @@ const App: React.FC = () => {
     let newStatus = job.currentStepStatus;
     let newDates = { ...job.stepDates };
 
+    // 计算新状态
     if (targetIndex === job.currentStepIndex) {
         if (isOC) return; 
         let statusFlow: StepStatus[] = isScreening ? ['waiting', 'rejected'] : ['in-progress', 'waiting', 'rejected'];
@@ -206,13 +225,30 @@ const App: React.FC = () => {
         newStatus = isScreening ? 'waiting' : 'in-progress';
     }
 
+    // 1. 乐观更新：立即修改本地状态，让 UI 瞬间响应（丝滑动画的关键）
+    setJobs(prevJobs => prevJobs.map(j => {
+        if (j.id === id) {
+            return {
+                ...j,
+                currentStepIndex: newIndex,
+                currentStepStatus: newStatus,
+                stepDates: newDates,
+                updatedAt: Date.now() // 更新本地显示的时间
+            };
+        }
+        return j;
+    }));
+
+    // 2. 后台同步：发送请求到数据库
     await supabase.from('jobs').update({
         current_step_index: newIndex,
         current_step_status: newStatus,
         step_dates: newDates,
         updated_at: new Date().toISOString()
     }).eq('id', id);
-    fetchJobs(user.id);
+
+    // 3. 静默校验：后台更新完后，静默拉取一次最新数据以确保一致性，但不显示 loading
+    fetchJobs(user.id, undefined, false);
   };
 
   const handleSaveSettings = (newSteps: string[]) => {
@@ -220,32 +256,27 @@ const App: React.FC = () => {
     localStorage.setItem(STORAGE_KEYS.CONFIG, JSON.stringify({ defaultSteps: newSteps }));
   };
 
-  // 统一由 WelcomeModal 处理
-  const handleSelectManage = () => {
-    // 之前是关闭Welcome打开Login，现在直接内部切换mode，所以这里的回调可能不需要做关闭，
-    // 但因为逻辑都移到了Modal内部，这里只需要负责处理那些非Modal内部的逻辑（如果有）
-    // 其实 WelcomeModal 内部自己切换 state 即可，这个 props 主要是给外部控制
-    // 不过我们的 WelcomeModal 接收 onSelectView 和 onSelectManage 吗？
-    // 注意：修改后的 WelcomeModal 不再需要 onSelectManage 回调，因为它在内部切换了。
-    // 所以我们需要去修改 WelcomeModal 的 props 定义，或者保留它但为空实现。
-    // 实际上，上面的 WelcomeModal 代码去掉了 onSelectManage prop，改为了内部 setMode。
-    // 所以这里不需要传 onSelectManage 了。
+  const handleLogout = async () => {
+    if (window.confirm("确定要退出登录吗？")) {
+      await supabase.auth.signOut();
+    }
   };
 
   const handleSelectView = (email: string) => {
+    localStorage.setItem(STORAGE_KEYS.VIEW_MODE_EMAIL, email); 
     setViewModeEmail(email);
     setShowWelcome(false);
     fetchJobs(undefined, email);
   };
 
   const handleExitView = () => {
+    localStorage.removeItem(STORAGE_KEYS.VIEW_MODE_EMAIL); 
     setViewModeEmail(null);
     setJobs([]);
     setWelcomeInitialMode('selection');
     setShowWelcome(true);
   };
 
-  // Header 上的登录点击
   const handleHeaderLoginClick = () => {
     setWelcomeInitialMode('auth');
     setShowWelcome(true);
@@ -285,8 +316,10 @@ const App: React.FC = () => {
 
              {isManageMode && (
                 <>
+                 <span className="text-xs text-slate-500 bg-slate-100 px-2 py-1 rounded hidden sm:inline">{user?.email}</span>
+                 
                  <button onClick={() => setIsSettingsModalOpen(true)} className="p-2 text-slate-500 hover:bg-slate-100 rounded-lg"><Settings size={20} /></button>
-                 <button onClick={() => supabase.auth.signOut()} className="p-2 text-red-500 hover:bg-red-50 rounded-lg"><LogOut size={20} /></button>
+                 <button onClick={handleLogout} className="p-2 text-red-500 hover:bg-red-50 rounded-lg"><LogOut size={20} /></button>
                  <button onClick={() => { setEditingJob(null); setIsJobModalOpen(true); }} className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 shadow-md active:scale-95 font-medium">
                     <Plus size={18} /><span className="hidden sm:inline">记一笔</span>
                  </button>
@@ -342,21 +375,16 @@ const App: React.FC = () => {
         )}
       </main>
 
-
       <WelcomeModal 
         isOpen={showWelcome} 
         initialMode={welcomeInitialMode} 
         onSelectView={handleSelectView} 
-        // 【关键修改】只有在 管理模式(isManageMode) 或 查看模式(isViewMode) 下，才传入关闭函数
-        // 否则传 undefined，WelcomeModal 内部会自动隐藏关闭按钮
         onClose={(isManageMode || isViewMode) ? () => setShowWelcome(false) : undefined} 
         onLoginSuccess={() => setShowWelcome(false)}
       />
 
-
       <JobModal isOpen={isJobModalOpen} onClose={() => setIsJobModalOpen(false)} onSave={handleSaveJob} editingJob={editingJob} defaultSteps={config.defaultSteps} />
       <SettingsModal isOpen={isSettingsModalOpen} onClose={() => setIsSettingsModalOpen(false)} defaultSteps={config.defaultSteps} onSave={handleSaveSettings} />
-      {/* LoginModal Removed */}
     </div>
   );
 };
