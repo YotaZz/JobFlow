@@ -31,6 +31,7 @@
 | :---: | :---: |
 | <img src="https://github.com/user-attachments/assets/87c22ec2-73b1-423f-b51e-b24350ccb834" width="100%" alt="Welcome Mode" /> | <img src="https://github.com/user-attachments/assets/099947b6-49b8-4dbd-8d7a-f6a7811ff16a" width="100%" alt="Mobile View" /> |
 | **支持管理模式与仅查看分享模式** | **随时随地更新面试进度** |
+
 ---
 
 ## 🚀 在线使用 (推荐)
@@ -52,12 +53,10 @@
 * **👀 仅查看模式**：支持通过输入邮箱查看特定用户的公开投递进度（只读），方便分享与进度汇报。
 * **📊 可视化进度追踪**：通过动态进度条展示面试阶段，支持“进入”、“等待”、“挂掉”三种状态的直观切换。
 * **🤖 自动化流程管理**：
-
   * **Ghosting Detection**：若“初筛”阶段超过 **10天** 无回应，自动标记为“无回应/已挂”。
   * **自动时间轴**：自动记录每个步骤的时间节点。
-
 * **🏷️ 多维度岗位管理**：支持 **实习**、**校招**、**社招** 三种岗位类型。
-* **wmv 自定义招聘流程**：支持全局配置默认面试流程（如：笔试 -> 一面 -> 二面 -> HR面）。
+* **⚙️ 自定义招聘流程**：支持全局配置默认面试流程（如：笔试 -> 一面 -> 二面 -> HR面）。
 
 ## 🛠️ 技术栈
 
@@ -70,36 +69,36 @@
 
 ## 💻 开发者指南
 
-> 如果您只是想使用本工具，请直接访问 \\\[在线版本](#-在线使用-推荐)。以下内容仅供希望参与项目开发或私有化部署的开发者参考。
+> 如果您只是想使用本工具，请直接访问 [在线版本](#-在线使用-推荐)。以下内容仅供希望参与项目开发或私有化部署的开发者参考。
 
-### 1\. 克隆项目与安装依赖
+### 1. 克隆项目与安装依赖
 
 ```bash
-git clone \\\[https://github.com/your-username/jobflow.git](https://github.com/your-username/jobflow.git)
+git clone [https://github.com/your-username/jobflow.git](https://github.com/your-username/jobflow.git)
 cd jobflow
 npm install
 
 ```
 
-### 2\. 配置环境变量
+### 2. 配置环境变量
 
 在项目根目录创建一个 `.env.local` 文件，并填入以下内容：
 
 ```env
 # Supabase 配置 (必须)
-VITE\\\_SUPABASE\\\_URL=你的\\\_Supabase\\\_Project\\\_URL
-VITE\\\_SUPABASE\\\_ANON\\\_KEY=你的\\\_Supabase\\\_Anon\\\_Key
+VITE_SUPABASE_URL=你的_Supabase_Project_URL
+VITE_SUPABASE_ANON_KEY=你的_Supabase_Anon_Key
 
 ```
 
-### 3\. 运行开发服务器
+### 3. 运行开发服务器
 
 ```bash
 npm run dev
 
 ```
 
-### 4\. 数据库配置 (Supabase)
+### 4. 数据库配置 (Supabase)
 
 本项目依赖 Supabase 的 PostgreSQL 数据库。若进行私有化部署，请在 Supabase 的 **SQL Editor** 中执行以下命令，以初始化表结构、安全策略（RLS）和自动化触发器。
 
@@ -109,48 +108,46 @@ npm run dev
 ```sql
 -- 1. 创建 jobs 表 (核心数据表)
 create table public.jobs (
-  id uuid not null default gen\\\_random\\\_uuid (),
-  user\\\_id uuid references auth.users(id) default auth.uid(),
+  id uuid not null default gen_random_uuid (),
+  user_id uuid references auth.users(id) default auth.uid(),
   
   -- 用户基本信息
-  email text null,       -- 关联邮箱（用于仅查看模式索引）
+  email text null,       -- 关联邮箱
   company text not null, -- 公司名称
   position text not null,-- 职位名称
   
   -- 职位详情
-  job\\\_type text not null, -- 'internship' | 'campus' | 'social'
+  job_type text not null, -- 'internship' | 'campus' | 'social'
   salary text null,
   notes text null,
   
   -- 进度控制
-  steps text\\\[] null, 
-  current\\\_step\\\_index integer null default 0,
-  current\\\_step\\\_status text null, -- 'in-progress' | 'waiting' | 'rejected'
-  step\\\_dates jsonb null default '{}'::jsonb, 
+  steps text[] null, 
+  current_step_index integer null default 0,
+  current_step_status text null, -- 'in-progress' | 'waiting' | 'rejected'
+  step_dates jsonb null default '{}'::jsonb, 
   
   -- 时间戳
-  created\\\_at timestamp with time zone not null default now(),
-  updated\\\_at timestamp with time zone not null default now(),
+  created_at timestamp with time zone not null default now(),
+  updated_at timestamp with time zone not null default now(),
   
-  constraint jobs\\\_pkey primary key (id)
+  constraint jobs_pkey primary key (id)
 );
 
--- 2. 创建 profiles 表 (用户统计表)
+-- 2. 创建 profiles 表
 create table public.profiles (
   id uuid references auth.users(id) on delete cascade not null primary key,
   email text unique not null,
-  created\\\_at timestamp with time zone default timezone('utc'::text, now()) not null,
-  updated\\\_at timestamp with time zone default timezone('utc'::text, now()) not null,
-  
-  -- 统计字段 (由触发器自动维护)
-  total\\\_applications integer DEFAULT 0,
-  active\\\_applications integer DEFAULT 0,
-  offers\\\_received integer DEFAULT 0,
-  rejected\\\_applications integer DEFAULT 0
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
+  updated_at timestamp with time zone default timezone('utc'::text, now()) not null,
+  total_applications integer DEFAULT 0,
+  active_applications integer DEFAULT 0,
+  offers_received integer DEFAULT 0,
+  rejected_applications integer DEFAULT 0
 );
 
 -- 3. 开启实时监听
-alter publication supabase\\\_realtime add table public.jobs;
+alter publication supabase_realtime add table public.jobs;
 
 -- 4. 启用行级安全 (RLS)
 ALTER TABLE public.jobs ENABLE ROW LEVEL SECURITY;
@@ -158,50 +155,48 @@ ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 
 -- 5. 配置 jobs 表安全策略
 CREATE POLICY "Enable read access for all users" ON public.jobs FOR SELECT USING (true);
-CREATE POLICY "Users can insert their own jobs" ON public.jobs FOR INSERT WITH CHECK (auth.uid() = user\\\_id);
-CREATE POLICY "Users can update their own jobs" ON public.jobs FOR UPDATE USING (auth.uid() = user\\\_id);
-CREATE POLICY "Users can delete their own jobs" ON public.jobs FOR DELETE USING (auth.uid() = user\\\_id);
+CREATE POLICY "Users can insert their own jobs" ON public.jobs FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Users can update their own jobs" ON public.jobs FOR UPDATE USING (auth.uid() = user_id);
+CREATE POLICY "Users can delete their own jobs" ON public.jobs FOR DELETE USING (auth.uid() = user_id);
 
 -- 6. 配置 profiles 表安全策略
 CREATE POLICY "Public profiles are viewable by everyone." ON public.profiles FOR SELECT USING (true);
 CREATE POLICY "Users can insert their own profile." ON public.profiles FOR INSERT WITH CHECK (auth.uid() = id);
 CREATE POLICY "Users can update own profile." ON public.profiles FOR UPDATE USING (auth.uid() = id);
 
--- 7. 设置 Trigger: 自动创建 Profile (用户注册时触发)
-CREATE OR REPLACE FUNCTION public.handle\\\_new\\\_user()
-RETURNS TRIGGER LANGUAGE plpgsql SECURITY DEFINER set search\\\_path = public AS $$
+-- 7. 设置 Trigger: 自动创建 Profile
+CREATE OR REPLACE FUNCTION public.handle_new_user()
+RETURNS TRIGGER LANGUAGE plpgsql SECURITY DEFINER set search_path = public AS $$
 BEGIN
   INSERT INTO public.profiles (id, email) VALUES (new.id, new.email);
   RETURN new;
 END;
 $$;
 
-CREATE TRIGGER on\\\_auth\\\_user\\\_created
+CREATE TRIGGER on_auth_user_created
 AFTER INSERT ON auth.users
-FOR EACH ROW EXECUTE PROCEDURE public.handle\\\_new\\\_user();
+FOR EACH ROW EXECUTE PROCEDURE public.handle_new_user();
 
--- 8. 设置 Trigger: 自动更新统计数据 (jobs表变动时触发)
-CREATE OR REPLACE FUNCTION public.handle\\\_job\\\_changes()
+-- 8. 设置 Trigger: 自动更新统计数据
+CREATE OR REPLACE FUNCTION public.handle_job_changes()
 RETURNS TRIGGER LANGUAGE plpgsql SECURITY DEFINER AS $$
 DECLARE
-  target\\\_user\\\_id uuid;
+  target_user_id uuid;
 BEGIN
-  IF (TG\\\_OP = 'DELETE') THEN target\\\_user\\\_id := OLD.user\\\_id; ELSE target\\\_user\\\_id := NEW.user\\\_id; END IF;
+  IF (TG_OP = 'DELETE') THEN target_user_id := OLD.user_id; ELSE target_user_id := NEW.user_id; END IF;
   
   UPDATE public.profiles SET 
-    total\\\_applications = (SELECT count(\\\*) FROM public.jobs WHERE user\\\_id = target\\\_user\\\_id),
-    active\\\_applications = (SELECT count(\\\*) FROM public.jobs WHERE user\\\_id = target\\\_user\\\_id AND current\\\_step\\\_status != 'rejected' AND current\\\_step\\\_index < (jsonb\\\_array\\\_length(COALESCE(steps, '\\\[]'::jsonb)) - 1)),
-    offers\\\_received = (SELECT count(\\\*) FROM public.jobs WHERE user\\\_id = target\\\_user\\\_id AND current\\\_step\\\_status != 'rejected' AND current\\\_step\\\_index = (jsonb\\\_array\\\_length(COALESCE(steps, '\\\[]'::jsonb)) - 1)),
-    rejected\\\_applications = (SELECT count(\\\*) FROM public.jobs WHERE user\\\_id = target\\\_user\\\_id AND current\\\_step\\\_status = 'rejected'),
-    updated\\\_at = now()
-  WHERE id = target\\\_user\\\_id;
+    total_applications = (SELECT count(*) FROM public.jobs WHERE user_id = target_user_id),
+    active_applications = (SELECT count(*) FROM public.jobs WHERE user_id = target_user_id AND current_step_status != 'rejected'),
+    updated_at = now()
+  WHERE id = target_user_id;
   RETURN NULL;
 END;
 $$;
 
-CREATE TRIGGER on\\\_job\\\_change
+CREATE TRIGGER on_job_change
 AFTER INSERT OR UPDATE OR DELETE ON public.jobs
-FOR EACH ROW EXECUTE PROCEDURE public.handle\\\_job\\\_changes();
+FOR EACH ROW EXECUTE PROCEDURE public.handle_job_changes();
 
 ```
 
@@ -210,12 +205,6 @@ FOR EACH ROW EXECUTE PROCEDURE public.handle\\\_job\\\_changes();
 ## 🤝 贡献
 
 欢迎提交 Issue 或 Pull Request 来改进 JobFlow！
-
-1. Fork 本仓库
-2. 创建你的特性分支 (`git checkout -b feature/AmazingFeature`)
-3. 提交你的修改 (`git commit -m 'Add some AmazingFeature'`)
-4. 推送到分支 (`git push origin feature/AmazingFeature`)
-5. 打开一个 Pull Request
 
 ## 📄 许可证
 
