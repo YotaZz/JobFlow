@@ -20,9 +20,8 @@
 
 <p>
 <a href="#-功能特性">功能特性</a> •
-<a href="#-技术栈">技术栈</a> •
-<a href="#-快速开始">快速开始</a> •
-<a href="#-数据库配置">数据库配置</a>
+<a href="#-在线使用">在线使用</a> •
+<a href="#-开发者指南">开发者指南</a>
 </p>
 </div>
 
@@ -30,32 +29,48 @@
 
 ## 📖 简介
 
-**JobFlow** 是一个现代化的求职进度追踪应用。它摒Lx弃了繁琐的 Excel 表格，通过直观的**进度条（Stepper）和卡片式布局**，帮助求职者清晰地管理每一个面试流程。
+**JobFlow** 是一个现代化的求职进度追踪应用。它摒弃了繁琐的 Excel 表格，通过直观的**进度条 (Stepper)** 和**卡片式布局**，帮助求职者清晰地管理每一个面试流程。
 
 无论是实习、校招还是社招，你都可以自定义招聘节点，记录薪资待遇、面试备注，并实时追踪从“已投递”到“OC”的全过程。
 
+## 🚀 在线使用 (推荐)
+
+无需繁琐的配置和部署，我们提供了稳定、安全的在线服务，您可以直接注册账号并开始管理您的求职进度。
+
+👉 **[点击进入 JobFlow - 招聘投递追踪](https://jobflow-2bz.pages.dev/)**
+
+* ✅ **完全免费**：核心功能无限制使用。
+* ✅ **数据安全**：基于 Supabase 的企业级数据隔离，仅您自己可见。
+* ✅ **即开即用**：无需关心数据库或服务器维护。
+* ✅ **公开分享**：支持生成只读链接，方便向导师或朋友展示进度。
+
+---
+
 ## ✨ 功能特性
 
+* **👥 多用户支持**：完整的注册/登录体系，数据云端同步，多端可查。
+* **👀 仅查看模式**：支持通过输入邮箱查看特定用户的公开投递进度（只读），方便分享与进度汇报。
 * **📊 可视化进度追踪**：通过动态进度条展示面试阶段，支持“进入”、“等待”、“挂掉”三种状态的直观切换。
 * **🤖 自动化流程管理**：
-* 智能检测“初筛”阶段，若超过 10 天无状态更新，自动标记为“无回应/已挂”（Ghosting Detection）。
-* 自动记录每个步骤的时间节点，生成时间线。
+* **Ghosting Detection**：若“初筛”阶段超过 **10天** 无回应，自动标记为“无回应/已挂”。
+* **自动时间轴**：自动记录每个步骤的时间节点。
 
 
-* **🏷️ 多维度岗位管理**：支持 **实习**、**校招**、**社招** 三种岗位类型，配备不同的视觉标识。
-* **wmv 自定义招聘流程**：支持全局配置默认面试流程（如：笔试 -> 一面 -> 二面 -> HR面），也可针对单个投递记录进行微调。
-* **🔐 安全的数据管理**：集成 Supabase Auth 和 Database，支持管理员登录与数据云端同步。
-* **📈 数据看板**：实时统计总投递数、进行中、已通过及已挂掉的岗位数量。
+* **🏷️ 多维度岗位管理**：支持 **实习**、**校招**、**社招** 三种岗位类型。
+* **wmv 自定义招聘流程**：支持全局配置默认面试流程（如：笔试 -> 一面 -> 二面 -> HR面）。
 
 ## 🛠️ 技术栈
 
 * **前端框架**: [React 19](https://react.dev/)
 * **构建工具**: [Vite](https://vitejs.dev/)
 * **样式库**: [Tailwind CSS](https://tailwindcss.com/)
-* **图标库**: [Lucide React](https://lucide.dev/)
-* **后端服务 (BaaS)**: [Supabase](https://supabase.com/) (PostgreSQL + Auth + Realtime)
+* **后端服务**: [Supabase](https://supabase.com/) (PostgreSQL + Auth + Realtime)
 
-## 🚀 快速开始
+---
+
+## 💻 开发者指南
+
+> 如果您只是想使用本工具，请直接访问 [在线版本](https://www.google.com/search?q=%23-%E5%9C%A8%E7%BA%BF%E4%BD%BF%E7%94%A8-%E6%8E%A8%E8%8D%90)。以下内容仅供希望参与项目开发或私有化部署的开发者参考。
 
 ### 1. 克隆项目与安装依赖
 
@@ -75,9 +90,6 @@ npm install
 VITE_SUPABASE_URL=你的_Supabase_Project_URL
 VITE_SUPABASE_ANON_KEY=你的_Supabase_Anon_Key
 
-# Gemini API Key (如果在 AI Studio 环境下运行)
-GEMINI_API_KEY=你的_Gemini_Key
-
 ```
 
 ### 3. 运行开发服务器
@@ -87,15 +99,19 @@ npm run dev
 
 ```
 
-打开浏览器访问 `http://localhost:3000` 即可看到应用。
+### 4. 数据库配置 (Supabase)
 
-## 🗄️ 数据库配置 (Supabase)
+本项目依赖 Supabase 的 PostgreSQL 数据库。若进行私有化部署，请在 SQL Editor 中执行以下命令以初始化表结构和安全策略（RLS）。
 
-本项目依赖 Supabase 的 PostgreSQL 数据库。请在 Supabase 的 SQL Editor 中执行以下命令以创建 `jobs` 表：
+<details>
+<summary>点击展开 SQL 配置代码</summary>
 
 ```sql
+-- 1. 创建 jobs 表
 create table public.jobs (
   id uuid not null default gen_random_uuid (),
+  user_id uuid references auth.users(id) default auth.uid(),
+  email text null,
   created_at timestamp with time zone not null default now(),
   updated_at timestamp with time zone not null default now(),
   company text not null,
@@ -103,19 +119,31 @@ create table public.jobs (
   job_type text not null, -- 'internship' | 'campus' | 'social'
   salary text null,
   notes text null,
-  steps text[] null, -- 存储步骤名称数组
+  steps text[] null, 
   current_step_index integer null default 0,
   current_step_status text null, -- 'in-progress' | 'waiting' | 'rejected'
-  step_dates jsonb null default '{}'::jsonb, -- 存储每个步骤的时间戳
+  step_dates jsonb null default '{}'::jsonb, 
   constraint jobs_pkey primary key (id)
 );
 
--- 开启实时监听 (Realtime)
+-- 2. 开启实时监听
 alter publication supabase_realtime add table public.jobs;
+
+-- 3. 启用行级安全 (RLS)
+ALTER TABLE public.jobs ENABLE ROW LEVEL SECURITY;
+
+-- 4. 配置安全策略
+-- 允许所有人读取数据 (用于“仅查看”模式，前端需配合 email 过滤)
+CREATE POLICY "Enable read access for all users" ON public.jobs FOR SELECT USING (true);
+
+-- 仅允许用户插入/更新/删除自己的数据
+CREATE POLICY "Users can insert their own jobs" ON public.jobs FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Users can update their own jobs" ON public.jobs FOR UPDATE USING (auth.uid() = user_id);
+CREATE POLICY "Users can delete their own jobs" ON public.jobs FOR DELETE USING (auth.uid() = user_id);
 
 ```
 
-> **注意**：如果不设置上述表结构，应用将无法加载或保存数据。
+</details>
 
 ## 🤝 贡献
 
