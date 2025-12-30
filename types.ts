@@ -18,7 +18,8 @@ export interface JobApplication {
   company: string;
   position: string;
   jobType: JobType;
-  tags: string[]; // 变更点：由 season?: string 改为 tags string array
+  base?: string;
+  tags: string[]; 
   salary?: string;
   notes?: string;
   steps: string[];

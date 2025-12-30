@@ -1,7 +1,7 @@
 import React from 'react';
 import { JobApplication, JobType } from '../types';
 import { Stepper } from './Stepper';
-import { Trash2, Edit2, Wallet, CalendarDays, Timer } from 'lucide-react';
+import { Trash2, Edit2, Wallet, CalendarDays, Timer, MapPin } from 'lucide-react'; // [Modified] 引入 MapPin
 
 interface JobCardProps {
   job: JobApplication;
@@ -84,13 +84,22 @@ export const JobCard: React.FC<JobCardProps> = ({ job, onUpdateStep, onEdit, onD
               </span>
             </div>
             
-            <div className="flex items-center gap-3 text-xs text-slate-500 mt-2">
+            <div className="flex items-center gap-3 text-xs text-slate-500 mt-2 flex-wrap">
                {job.salary && (
                 <div className="flex items-center gap-1 text-emerald-600 bg-emerald-50/50 px-1.5 py-0.5 rounded">
                   <Wallet size={10} />
                   <span className="font-medium truncate max-w-[100px]">{job.salary}</span>
                 </div>
               )}
+
+              {/* [Modified] Base Display (工作地点) */}
+              {job.base && (
+                <div className="flex items-center gap-1 text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded">
+                  <MapPin size={10} />
+                  <span className="font-medium truncate max-w-[100px]">{job.base}</span>
+                </div>
+              )}
+
               <div className="flex items-center gap-1">
                 <CalendarDays size={10} />
                 <span>{formattedDate}</span>

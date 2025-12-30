@@ -20,8 +20,9 @@ export const JobModal: React.FC<JobModalProps> = ({
   const [formData, setFormData] = useState({
     company: '',
     position: '',
+    base:'',
     jobType: 'internship' as JobType,
-    tags: [] as string[], // 使用 tags 替代 season
+    tags: [] as string[], 
     salary: '',
     notes: '',
     currentStepIndex: 0,
@@ -39,6 +40,7 @@ export const JobModal: React.FC<JobModalProps> = ({
         setFormData({
           company: editingJob.company,
           position: editingJob.position,
+	  base: editingJob.base || '',
           jobType: editingJob.jobType || 'internship',
           tags: editingJob.tags || [],
           salary: editingJob.salary,
@@ -52,6 +54,7 @@ export const JobModal: React.FC<JobModalProps> = ({
         setFormData({
           company: '',
           position: '',
+          base: '',
           jobType: 'internship',
           tags: [],
           salary: '',
@@ -166,7 +169,7 @@ export const JobModal: React.FC<JobModalProps> = ({
     }
   };
 
-  // 推荐标签：优先显示明年
+
   const currentYear = new Date().getFullYear();
   const nextYear = currentYear + 1;
   const recommendedTags = [
@@ -214,7 +217,7 @@ export const JobModal: React.FC<JobModalProps> = ({
                    onChange={() => setFormData(prev => ({...prev, jobType: 'internship'}))}
                  />
                  <GraduationCap size={20} />
-                 <span className="font-semibold text-sm">实习岗位</span>
+                 <span className="font-semibold text-sm">实习</span>
                </label>
 
                <label className={`
@@ -270,10 +273,22 @@ export const JobModal: React.FC<JobModalProps> = ({
                   type="text"
                   value={formData.position}
                   onChange={e => setFormData({...formData, position: e.target.value})}
-                  placeholder="例如：前端工程师"
+                  placeholder="例如：产品经理"
                   className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
                 />
               </div>
+            </div>
+
+	    {/* Base Input*/}
+            <div className="space-y-2">
+                <label className="text-sm font-semibold text-slate-700">工作地点 (Base)</label>
+                <input
+                  type="text"
+                  value={formData.base}
+                  onChange={e => setFormData({...formData, base: e.target.value})}
+                  placeholder="例如：北京 / 上海 / Remote"
+                  className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                />
             </div>
 
             {/* Tag Selection & Salary */}

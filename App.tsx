@@ -78,7 +78,7 @@ const App: React.FC = () => {
     };
   }, []);
 
-  // 1. 修改 fetchJobs: 映射 tags
+
   const fetchJobs = async (userId?: string, targetEmail?: string, showLoading = true) => {
     if (showLoading) setIsLoading(true);
     let query = supabase.from('jobs').select('*').order('created_at', { ascending: false });
@@ -126,6 +126,7 @@ const App: React.FC = () => {
             company: item.company,
             position: item.position,
             jobType: item.job_type,
+            base: item.base,
             tags: item.tags || [], // 映射 tags
             salary: item.salary,
             notes: item.notes,
@@ -151,7 +152,7 @@ const App: React.FC = () => {
     if (showLoading) setIsLoading(false);
   };
 
-  // 2. 修改 handleSaveJob: 保存 tags
+
   const handleSaveJob = async (jobData: any, id?: string) => {
     if (!user) return alert("请先登录");
     const initialStepDates = id 
@@ -164,7 +165,8 @@ const App: React.FC = () => {
       company: jobData.company,
       position: jobData.position,
       job_type: jobData.jobType,
-      tags: jobData.tags || [], // 保存 tags
+      base: jobData.base,
+      tags: jobData.tags || [], 
       salary: jobData.salary,
       notes: jobData.notes,
       steps: jobData.steps,
