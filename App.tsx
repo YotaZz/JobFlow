@@ -5,7 +5,8 @@ import { JobCard } from './components/JobCard';
 import { JobModal } from './components/JobModal';
 import { SettingsModal } from './components/SettingsModal';
 import { WelcomeModal } from './components/WelcomeModal';
-import { Plus, Settings, Search, LayoutList, Briefcase, Loader2, LogIn, LogOut, Lock, Unlock, Eye, Filter } from 'lucide-react'; // 新增 Filter 图标
+// [修改 1] 引入 Download 图标
+import { Plus, Settings, Search, LayoutList, Briefcase, Loader2, LogIn, LogOut, Lock, Unlock, Eye, Filter, Download } from 'lucide-react';
 import { supabase } from './supabaseClient';
 import { User } from '@supabase/supabase-js';
 
@@ -261,6 +262,64 @@ const App: React.FC = () => {
     );
   }, [filteredByTagJobs, searchTerm]);
 
+  // [修改 2] 添加导出 CSV 的函数
+  const handleExportCSV = () => {
+    // 导出当前 Tag 分组下的所有数据 (filteredByTagJobs)
+    if (filteredByTagJobs.length === 0) {
+      alert('当前列表暂无数据可导出');
+      return;
+    }
+
+    const headers = ['公司', '岗位', '类型', '工作地点', '薪资', '当前节点', '状态', '标签', '备注', '创建时间', '更新时间'];
+    
+    const csvContent = [
+      headers.join(','),
+      ...filteredByTagJobs.map(job => {
+        const currentStep = job.steps[job.currentStepIndex] || '未知';
+        const tags = job.tags ? job.tags.join(';') : '';
+        const createTime = new Date(job.createdAt).toLocaleString();
+        const updateTime = new Date(job.updatedAt).toLocaleString();
+        
+        // CSV 转义处理：包含逗号、双引号或换行的字段需要用双引号包裹，且内部双引号要转义
+        const escape = (str: string | undefined) => {
+            if (!str) return '';
+            const stringValue = String(str);
+            if (stringValue.includes(',') || stringValue.includes('"') || stringValue.includes('\n')) {
+                return `"${stringValue.replace(/"/g, '""')}"`;
+            }
+            return stringValue;
+        };
+
+        return [
+            escape(job.company),
+            escape(job.position),
+            escape(job.jobType),
+            escape(job.base),
+            escape(job.salary),
+            escape(currentStep),
+            escape(job.currentStepStatus),
+            escape(tags),
+            escape(job.notes),
+            escape(createTime),
+            escape(updateTime)
+        ].join(',');
+      })
+    ].join('\n');
+
+    // 添加 BOM \uFEFF 解决 Excel 打开乱码问题
+    const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    if (link.download !== undefined) {
+      const url = URL.createObjectURL(blob);
+      link.setAttribute('href', url);
+      link.setAttribute('download', `jobflow_export_${activeTag}_${new Date().toISOString().slice(0,10)}.csv`);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
       <header className="sticky top-0 z-30 bg-white/80 backdrop-blur-md border-b border-slate-200">
@@ -290,6 +349,16 @@ const App: React.FC = () => {
              {isManageMode && (
                 <>
                  <span className="text-xs text-slate-500 bg-slate-100 px-2 py-1 rounded hidden sm:inline">{user?.email}</span>
+                 
+                 {/* [修改 3] 添加导出按钮，位于设置按钮左侧 */}
+                 <button 
+                    onClick={handleExportCSV} 
+                    className="p-2 text-slate-500 hover:bg-slate-100 rounded-lg transition-colors"
+                    title="导出 CSV"
+                 >
+                    <Download size={20} />
+                 </button>
+
                  <button onClick={() => setIsSettingsModalOpen(true)} className="p-2 text-slate-500 hover:bg-slate-100 rounded-lg"><Settings size={20} /></button>
                  <button onClick={handleLogout} className="p-2 text-red-500 hover:bg-red-50 rounded-lg"><LogOut size={20} /></button>
                  <button onClick={() => { setEditingJob(null); setIsJobModalOpen(true); }} className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 shadow-md active:scale-95 font-medium">
@@ -303,7 +372,8 @@ const App: React.FC = () => {
           </div>
         </div>
       </header>
-
+      
+      {/* Main content remains same... */}
       <main className="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {isLoading ? (
             <div className="flex h-64 items-center justify-center"><Loader2 className="animate-spin text-blue-600 w-8 h-8"/></div>
